@@ -14,8 +14,7 @@ A simple streamlit application where using can upload a txt file containing webs
 `streamlit run app.py`
 
 # Supported file
-For simplicity, this application will only support text file. Inside your text file, separate your websites by line break. Like this <br />
-![image](https://github.com/osorioleomar/email-scraper/assets/7484046/b1ee69a8-7249-4fdc-9c1e-b74cada3437d)
+For simplicity, this application will only support text file. Inside your text file, separate your websites by line break.
 
 Once you have the application running, then uploaded your txt file, just hit Start Scraping. It will show which website is currently being processed and the collected emails.
 After processing all the website links, it will give the option to **download everything in CSV**.
