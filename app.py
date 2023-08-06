@@ -1,3 +1,4 @@
+import os
 import streamlit as st
 import pandas as pd
 import requests
@@ -56,27 +57,35 @@ def get_table_download_link(df):
     b64 = base64.b64encode(csv.encode()).decode()
     return f'<a href="data:file/csv;base64,{b64}" download="emails.csv">Download CSV file</a>'
 
-# ... (import statements and scraping functions remain unchanged)
+def save_data_to_csv(data):
+    """Save data to a CSV file."""
+    df = pd.DataFrame(data)
+    df.to_csv('emails.csv', index=False)
+
+def refresh_sidebar():
+    """Refresh the sidebar to show the download link."""
+    if os.path.exists('emails.csv'):
+        st.sidebar.empty()
+        st.sidebar.markdown(get_table_download_link(pd.read_csv('emails.csv')), unsafe_allow_html=True)
 
 def main():
     st.title("Website Email Scraper")
 
     # Sidebar
-    st.sidebar.header("Upload Websites List")
-    uploaded_file = st.sidebar.file_uploader("Upload a txt file", type="txt")
+    st.sidebar.header("Captured emails history files:")
+    
+    # Uploader in the main area
+    uploaded_file = st.file_uploader("Upload a txt file", type="txt")
     
     if uploaded_file is not None:
         # Counting the number of websites in the uploaded file
         websites = [line.strip() for line in uploaded_file.getvalue().decode("utf-8").splitlines()]
         
-        # Displaying the uploaded file details in sidebar
-        st.sidebar.text(f"Found {len(websites)} websites.")
-
-        if st.sidebar.button('Start Scraping'):
+        if st.button('Start Scraping'):
             data = []
 
             # Adjusting the layout
-            col1, col2 = st.columns([0.4,0.6])
+            col1, col2 = st.columns([0.4, 0.6])
             
             col1.header("Processed websites")
             col2.header("Collected emails")
@@ -93,7 +102,6 @@ def main():
                         col1.markdown(f'<span style="color: lightgray">{log}</span>', unsafe_allow_html=True)
                     try:
                         emails = scrape_emails_from_website(website)
-                        #main_emails, other_emails = categorize_emails(emails, website)
                         data.append({
                             'website': website,
                             'emails': ", ".join(emails)
@@ -108,12 +116,18 @@ def main():
                         })
 
                     with col2:
-                        print(data[-1])
                         col2.markdown(f"**{data[-1]['website']}**:")
                         col2.text(data[-1]['emails'])
 
-            # Download CSV file link at the bottom
+                # Save the data to a CSV file after processing each website
+                save_data_to_csv(data)
+                refresh_sidebar()  # Refresh the sidebar after each save
+
+            # Display download link in the main area
             st.markdown(get_table_download_link(pd.DataFrame(data)), unsafe_allow_html=True)
+
+    # Call the function to ensure the sidebar is updated at the beginning
+    refresh_sidebar()
 
 if __name__ == '__main__':
     main()
